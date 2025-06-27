@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>食物营养分析系统</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 {
+            margin: 0;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .cpu-status {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .cpu-core {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .core-label {
+            width: 100px;
+            font-weight: bold;
+        }
+        .core-bar {
+            flex-grow: 1;
+            height: 25px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+        .core-usage {
+            height: 100%;
+            width: 0%;
+            background-color: #4CAF50;
+            position: absolute;
+            transition: width 0.5s ease-in-out;
+        }
+        .core-percent {
+            position: absolute;
+            right: 10px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+        .nutrition-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .nutrition-chart {
+            height: 300px;
+        }
+        .food-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .food-image {
+            width: 150px;
+            height: 150px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-right: 20px;
+            object-fit: cover;
+        }
+        .food-details {
+            flex-grow: 1;
+        }
+        .nutrition-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .nutrition-table th, .nutrition-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .nutrition-table th {
+            background-color: #f2f2f2;
+        }
+        .advice-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 0 5px 5px 0;
+        }
+        .history-section {
+            margin-top: 30px;
+        }
+        .history-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .history-table th, .history-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        .history-table th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        .history-table tbody tr:hover {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #9e9e9e;
+        }
+        .btn-secondary:hover {
+            background-color: #8e8e8e;
+        }
+        .system-status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-active {
+            background-color: #4CAF50;
+        }
+        .status-inactive {
+            background-color: #f44336;
+        }
+        .status-waiting {
+            background-color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>食物营养分析系统</h1>
+            <p>实时监控与数据分析</p>
+        </header>
+
+        <div class="system-status card">
+            <div class="status-indicator">
+                <div class="status-dot status-active" id="system-status-dot"></div>
+                <span id="system-status-text">系统正常运行中</span>
+            </div>
+            <div>
+                <button id="start-analysis">开始新分析</button>
+                <button class="btn-secondary" id="show-history">查看历史记录</button>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h2>CPU核心使用情况</h2>
+                <div class="cpu-status" id="cpu-status">
+                    <!-- CPU核心使用情况将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>当前分析结果</h2>
+                <div id="current-analysis">
+                    <div class="food-info">
+                        <img src="/api/placeholder/150/150" alt="食物图片" class="food-image" id="food-image">
+                        <div class="food-details">
+                            <h3 id="food-name">等待分析...</h3>
+                            <p id="food-weight">重量: -- 克</p>
+                            <p id="analysis-time">分析时间: --</p>
+                        </div>
+                    </div>
+
+                    <div class="nutrition-data">
+                        <div>
+                            <h3>营养成分</h3>
+                            <table class="nutrition-table">
+                                <tr>
+                                    <th>成分</th>
+                                    <th>数值</th>
+                                </tr>
+                                <tr>
+                                    <td>热量</td>
+                                    <td id="calories">-- 千卡</td>
+                                </tr>
+                                <tr>
+                                    <td>碳水化合物</td>
+                                    <td id="carbs">-- 克</td>
+                                </tr>
+                                <tr>
+                                    <td>蛋白质</td>
+                                    <td id="protein">-- 克</td>
+                                </tr>
+                                <tr>
+                                    <td>脂肪</td>
+                                    <td id="fat">-- 克</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="nutrition-chart" id="nutrition-chart"></div>
+                    </div>
+
+                    <div class="advice-box">
+                        <h3>饮食建议</h3>
+                        <p id="advice">等待分析完成后显示饮食建议...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section card" id="history-section" style="display: none;">
+            <h2>历史记录</h2>
+            <div class="history-controls">
+                <input type="text" id="search-history" placeholder="搜索食物名称...">
+                <div>
+                    <button id="export-history">导出数据</button>
+                    <button class="btn-secondary" id="clear-history">清除历史</button>
+                </div>
+            </div>
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>日期时间</th>
+                            <th>食物</th>
+                            <th>重量</th>
+                            <th>热量</th>
+                            <th>碳水</th>
+                            <th>蛋白质</th>
+                            <th>脂肪</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-data">
+                        <!-- 历史数据将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+        // 模拟CPU核心数据
+        const cpuCores = [
+            { id: 0, name: "主核 (CPU 0)", usage: 0, program: "API分析程序" },
+            { id: 1, name: "从核 (CPU 1)", usage: 0, program: "摄像头程序" },
+            { id: 2, name: "从核 (CPU 2)", usage: 0, program: "称重传感器程序" }
+        ];
+
+        // 模拟历史数据
+        let historyData = [];
+
+        // 当前分析结果
+        let currentAnalysis = null;
+
+        // 营养成分图表
+        let nutritionChart = null;
+
+        // 初始化CPU使用情况显示
+        function initCpuStatus() {
+            const cpuStatusElement = document.getElementById('cpu-status');
+            cpuStatusElement.innerHTML = '';
+
+            cpuCores.forEach(core => {
+                const coreElement = document.createElement('div');
+                coreElement.className = 'cpu-core';
+                coreElement.innerHTML = `
+                    <div class="core-label">${core.name}</div>
+                    <div class="core-bar">
+                        <div class="core-usage" id="core-${core.id}-usage" style="width: ${core.usage}%"></div>
+                        <span class="core-percent" id="core-${core.id}-percent">${core.usage}%</span>
+                    </div>
+                    <div style="margin-left: 10px;" id="core-${core.id}-program">${core.program}</div>
+                `;
+                cpuStatusElement.appendChild(coreElement);
+            });
+        }
+
+        // 更新CPU使用情况
+        function updateCpuStatus() {
+            cpuCores.forEach(core => {
+                // 模拟CPU使用率变化
+                core.usage = Math.floor(Math.random() * 100);
+                
+                const usageElement = document.getElementById(`core-${core.id}-usage`);
+                const percentElement = document.getElementById(`core-${core.id}-percent`);
+                
+                if (usageElement && percentElement) {
+                    usageElement.style.width = `${core.usage}%`;
+                    percentElement.textContent = `${core.usage}%`;
+                }
+            });
+        }
+
+        // 初始化营养成分图表
+        function initNutritionChart() {
+            const ctx = document.createElement('canvas');
+            document.getElementById('nutrition-chart').appendChild(ctx);
+
+            nutritionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['碳水化合物', '蛋白质', '脂肪'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            '#FFC107',  // 碳水化合物 - 黄色
+                            '#4CAF50',  // 蛋白质 - 绿色
+                            '#F44336'   // 脂肪 - 红色
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: '营养成分比例'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新营养成分图表
+        function updateNutritionChart(carbs, protein, fat) {
+            if (nutritionChart) {
+                nutritionChart.data.datasets[0].data = [carbs, protein, fat];
+                nutritionChart.update();
+            }
+        }
+
+        // 显示当前分析结果
+        function displayAnalysis(data) {
+            // 更新UI元素
+            document.getElementById('food-name').textContent = data.food;
+            document.getElementById('food-weight').textContent = `重量: ${data.weight}`;
+            document.getElementById('analysis-time').textContent = `分析时间: ${data.timestamp}`;
+            document.getElementById('calories').textContent = `${data.calories} 千卡`;
+            document.getElementById('carbs').textContent = `${data.carbohydrates} 克`;
+            document.getElementById('protein').textContent = `${data.protein} 克`;
+            document.getElementById('fat').textContent = `${data.fat} 克`;
+            document.getElementById('advice').textContent = data.advice;
+            
+            // 更新饼图
+            updateNutritionChart(
+                parseFloat(data.carbohydrates) || 0,
+                parseFloat(data.protein) || 0,
+                parseFloat(data.fat) || 0
+            );
+            
+            // 保存到当前分析
+            currentAnalysis = data;
+        }
+
+        // 加载历史数据
+        function loadHistoryData() {
+            // 从本地存储加载历史数据
+            const storedData = localStorage.getItem('nutritionHistoryData');
+            if (storedData) {
+                historyData = JSON.parse(storedData);
+            } else {
+                // 如果没有存储的数据，添加一些示例数据
+                historyData = [
+                    {
+                        id: 1,
+                        timestamp: '2025-05-19 14:30:25',
+                        food: '苹果',
+                        weight: '150克',
+                        calories: '78 千卡',
+                        carbohydrates: '21 克',
+                        protein: '0.3 克',
+                        fat: '0.2 克',
+                        advice: '苹果富含维生素和膳食纤维，是健康零食的好选择。'
+                    },
+                    {
+                        id: 2,
+                        timestamp: '2025-05-18 18:45:12',
+                        food: '烤鸡胸肉',
+                        weight: '200克',
+                        calories: '330 千卡',
+                        carbohydrates: '0 克',
+                        protein: '62 克',
+                        fat: '7.5 克',
+                        advice: '鸡胸肉是优质蛋白质来源，低脂肪高蛋白，适合健身人群。'
+                    }
+                ];
+                // 保存到本地存储
+                saveHistoryData();
+            }
+            
+            // 显示历史数据
+            displayHistoryData();
+        }
+
+        // 显示历史数据
+        function displayHistoryData() {
+            const historyTableBody = document.getElementById('history-data');
+            historyTableBody.innerHTML = '';
+            
+            historyData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.timestamp}</td>
+                    <td>${item.food}</td>
+                    <td>${item.weight}</td>
+                    <td>${item.calories}</td>
+                    <td>${item.carbohydrates}</td>
+                    <td>${item.protein}</td>
+                    <td>${item.fat}</td>
+                `;
+                
+                // 点击行显示详细信息
+                row.addEventListener('click', () => {
+                    displayAnalysis(item);
+                    document.getElementById('history-section').style.display = 'none';
+                });
+                
+                historyTableBody.appendChild(row);
+            });
+        }
+
+        // 保存历史数据到本地存储
+        function saveHistoryData() {
+            localStorage.setItem('nutritionHistoryData', JSON.stringify(historyData));
+        }
+
+        // 添加新的分析记录
+        function addHistoryRecord(data) {
+            // 添加时间戳和ID
+            const record = {
+                ...data,
+                id: Date.now(),
+                timestamp: new Date().toLocaleString()
+            };
+            
+            historyData.push(record);
+            saveHistoryData();
+            
+            // 更新显示
+            if (document.getElementById('history-section').style.display !== 'none') {
+                displayHistoryData();
+            }
+            
+            return record;
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            if (confirm('确定要清除所有历史记录吗？此操作无法撤销。')) {
+                historyData = [];
+                saveHistoryData();
+                displayHistoryData();
+            }
+        }
+
+        // 导出历史数据
+        function exportHistory() {
+            const dataStr = JSON.stringify(historyData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = 'nutrition_history_' + new Date().toISOString().slice(0, 10) + '.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        // 模拟开始新分析
+        function startNewAnalysis() {
+            // 更改系统状态
+            document.getElementById('system-status-dot').className = 'status-dot status-waiting';
+            document.getElementById('system-status-text').textContent = '正在分析...';
+            
+            // 禁用按钮
+            document.getElementById('start-analysis').disabled = true;
+            
+            // 模拟程序执行，更新CPU使用情况
+            const intervalId = setInterval(updateCpuStatus, 500);
+            
+            // 模拟等待5秒后获得结果
+            setTimeout(() => {
+                clearInterval(intervalId);
+                
+                // 恢复系统状态
+                document.getElementById('system-status-dot').className = 'status-dot status-active';
+                document.getElementById('system-status-text').textContent = '系统正常运行中';
+                document.getElementById('start-analysis').disabled = false;
+                
+                // 重置CPU使用率
+                cpuCores.forEach(core => {
+                    core.usage = Math.floor(Math.random() * 30);
+                    const usageElement = document.getElementById(`core-${core.id}-usage`);
+                    const percentElement = document.getElementById(`core-${core.id}-percent`);
+                    
+                    if (usageElement && percentElement) {
+                        usageElement.style.width = `${core.usage}%`;
+                        percentElement.textContent = `${core.usage}%`;
+                    }
+                });
+                
+                // 模拟分析结果
+                const sampleFoods = [
+                    {
+                        food: '香蕉',
+                        weight: '120克',
+                        calories: '105 千卡',
+                        carbohydrates: '27 克',
+                        protein: '1.3 克',
+                        fat: '0.4 克',
+                        advice: '香蕉富含钾和膳食纤维，是很好的能量补充来源，适合运动前食用。'
+                    },
+                    {
+                        food: '牛排',
+                        weight: '250克',
+                        calories: '625 千卡',
+                        carbohydrates: '0 克',
+                        protein: '52 克',
+                        fat: '48 克',
+                        advice: '富含优质蛋白质，但脂肪含量较高，建议控制食用频率，搭配蔬菜一起食用。'
+                    },
+                    {
+                        food: '沙拉',
+                        weight: '180克',
+                        calories: '95 千卡',
+                        carbohydrates: '12 克',
+                        protein: '3 克',
+                        fat: '6 克',
+                        advice: '蔬菜沙拉富含维生素和矿物质，热量低，适合减重期间食用，可搭配优质蛋白质食物。'
+                    }
+                ];
+                
+                // 随机选择一个食物
+                const randomFood = sampleFoods[Math.floor(Math.random() * sampleFoods.length)];
+                
+                // 添加到历史记录并显示
+                const record = addHistoryRecord(randomFood);
+                displayAnalysis(record);
+                
+            }, 5000);
+        }
+
+        // 事件监听器
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化CPU状态
+            initCpuStatus();
+            updateCpuStatus();
+            
+            // 初始化营养图表
+            initNutritionChart();
+            
+            // 加载历史数据
+            loadHistoryData();
+            
+            // 按钮事件
+            document.getElementById('start-analysis').addEventListener('click', startNewAnalysis);
+            
+            document.getElementById('show-history').addEventListener('click', () => {
+                const historySection = document.getElementById('history-section');
+                historySection.style.display = historySection.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            document.getElementById('clear-history').addEventListener('click', clearHistory);
+            document.getElementById('export-history').addEventListener('click', exportHistory);
+            
+            // 搜索功能
+            document.getElementById('search-history').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#history-data tr');
+                
+                rows.forEach(row => {
+                    const foodName = row.cells[1].textContent.toLowerCase();
+                    if (foodName.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 模拟一个初始数据
+            const initialData = {
+                food: '初始化中...',
+                weight: '0克',
+                calories: '0 千卡',
+                carbohydrates: '0 克',
+                protein: '0 克',
+                fat: '0 克',
+                advice: '请点击"开始新分析"按钮开始分析食物',
+                timestamp: new Date().toLocaleString()
+            };
+            displayAnalysis(initialData);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
